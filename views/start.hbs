@@ -1,0 +1,86 @@
+<div class="row m-0 justify-content-center align-items-center vh-150" style="padding:1em;">
+    <div class="card text-center" style="width: 25rem;">
+        <div id="accordion">
+        <div class="card">
+            <div class="card-header" id="headingOne">
+            <h5 class="mb-0">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                Iniciar sesión
+                </button>
+            </h5>
+            </div>
+
+            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+            <div class="card-body">
+                <form method="post" id="Login">
+                    <div>
+                        <label for="userName">Usuario</label> <br>
+                        <input type="text" name="userName" id="userName" placeholder="Nombre de usuario" required> <br>
+                        <label for="userPass">Contraseña</label> <br>
+                        <input type="password" name="userPass" id="userPass" placeholder="Contraseña" required> <br> 
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-success">Entrar</button>
+                </form>
+            </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header" id="headingTwo">
+            <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                Registrarse
+                </button>
+            </h5>
+            </div>
+            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+            <div class="card-body">
+                <form method="post" id="registerForm">
+                    <div>
+                        <label for="Name">Nombre </label> <br>
+                        <input type="text" id="Name" autocomplete="false" placeholder="Nombre" required> <br>
+                        <label for="firstLN">Primer apellido</label> <br>
+                        <input type="text" id="firstLN" autocomplete="false" placeholder="Primer apellido" required> <br>
+                        <label for="secondLN">Segundo apellido</label> <br>
+                        <input type="text" id="secondLN" autocomplete="false" placeholder="Segundo apellido" required> <br>
+                        <label for="userNameuserName">Nombre de Usuario</label> <br>
+                        <input type="text" id="userNm" autocomplete="false" placeholder="Nombre de usuario" required> <br>
+                        <label for="userPass">Contraseña</label> <br>
+                        <input type="password" id="usrPass" autocomplete="false" placeholder="Contraseña" required> <br> 
+                        <label for="userPass">Repetir Contraseña</label> <br>
+                        <input type="password" id="usrPassRep" autocomplete="false" placeholder="Repetir contraseña" required> <br> 
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-success">Registrarse</button>
+                </form>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const socket = io.connect('http://localhost:8000');
+    $("#Login").submit((e)=>{
+        e.preventDefault();
+        if($("#userName").val() != '' && $("#userPass").val() != ''){
+            socket.emit('loginReq', $("#userName").val(), $("#userPass").val());
+        }else{
+            alert('Todos los campos son obligatorios');
+        }
+    });
+    socket.on('loginRes', (text) => {
+        window.location.href = text;
+    });
+
+    $("#registerForm").submit((e) => {
+        e.preventDefault();
+        socket.emit('regReq', $("#Name").val(), $("#firstLN").val(), $("#secondLN").val(), $("#userNm").val(), $("#usrPass").val(), $("#usrPassRep").val());
+    });
+
+    socket.on('error', (text)=>{
+        $("#usrPass").val('');
+        $("#usrPassRep").val('');
+        alert(text);
+    });
+</script>

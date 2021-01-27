@@ -1,0 +1,129 @@
+<body >
+    <center>
+        <h2>Chat</h2>
+    </center>
+    <div class="row m-0 justify-content-center align-items-center">
+        <div class="col-md-9">
+            <b>Mensajes de los usuarios de la sala</b>
+            
+                <div style="height: 70vh; border: 1px solid #000; border-radius: 10px; overflow:auto" id="messages">
+                    <div>
+                        {{#each consulta}}
+                        <div class="message">
+                            <b>{{this.NOM_USUARIO}}</b> <br />
+                            <div>
+                                {{#if this.mensaje}}
+                                    {{this.MSG_CONTENT}}
+                                {{/if}}
+                                {{#if this.imagen}}
+                                    <img src="{{this.MSG_CONTENT}}" width="75%" height="75%" />
+                                {{/if}}
+                            </div>
+                        </div>
+                        {{/each}}
+                        <div style="clearfix"></div>
+                    </div>
+                </div>
+            
+            <center>
+                <div style="height:5vh;">
+                    <form method="post" id="chatForm">
+                        <input type="text" id="chatTXT" autocomplete="off" style="width:80%;">
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#UploadFile">Add a file</button>
+                            <button type="submit" class="btn btn-success">Send</button>
+                        </div>
+                        <!-- <input type="file" name="Arch" id="sendFile">
+                        <button type="submit">Enviar</button> -->
+                    </form>
+                    {{!-- <input type="text" id="txtMessage" style="width:90%;">
+                    <input type="button" value="Enviar" class="btn btn-success"> --}}
+                </div>
+            </center>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <form method="post" id="SelectFile">
+        <div class="modal fade" id="UploadFile" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Upload a file</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <input type="file" name="UplFlS" id="UplFlSid" enctype="multipart/for-data">
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-primary">Upload file</button>
+                </div>
+              </div>
+            </div>
+          </div>
+    </form>
+
+                <input type="hidden" id="nurs" value="{{usr}}" />
+                <input type="hidden" id="numi" value="{{sesData.ID_USUARIO}}" />
+
+</body>
+
+<style>
+    .message {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        width: 50%;
+        margin: 10px;
+        padding: 5px;
+    }
+</style>
+
+<script>
+    const socket = io.connect('http://localhost:8000');
+
+    socket.on('is_online', (resp) =>{
+        $("#messages").append($('<div>').html(resp));
+    });
+
+    socket.emit('username', $("#nurs").val(), $("#numi").val());
+
+    $('#chatForm').submit((e) => {
+        e.preventDefault();
+        socket.emit('chat_message', $("#chatTXT").val());
+        $("#chatTXT").val('');
+        return false;
+    });
+
+    $("#UplFlSid").on('change', (e) =>{
+      const file = e.originalEvent.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (evt)=>{
+        $('#SelectFile').submit((e) => {
+          e.preventDefault();
+          socket.emit('upload_image', evt.target.result);
+          $("#UplFlSid").val('');
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    socket.on('message_res', (user, message) => {
+        const addChat = `<div class="message">
+                            <b>${user}</b> <br />
+                            <div>${message}</div>
+                        </div>`
+        $("#messages").append(addChat);
+    });
+
+    socket.on('uploaded_img', (user, image)=>{
+        const addChat = `<div class="message">
+                            <b>${user}</b> <br />
+                            <div><a target="_blank" href="${image}"><img src="${image}" width="75%" height="75%" /></a></div>
+                        </div>`
+      $("#messages").append(addChat);
+    })
+
+</script>

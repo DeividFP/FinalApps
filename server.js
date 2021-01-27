@@ -1,3 +1,6 @@
+/**
+ * Midelwares a utilizar para la conexión y manejo de Webservice
+ */
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
@@ -13,6 +16,9 @@ const rest = new (require('rest-mssql-nodejs'))({
 
 let usr = "";
 
+/**
+ * Configuración de rutas para las views
+ */
 app.set('views', path.join(__dirname, 'views'));
 app.engine('.hbs', exphbs({
     defaultLayout: 'main',
@@ -22,6 +28,9 @@ app.engine('.hbs', exphbs({
 }));
 app.set('view engine', 'hbs');
 
+/**
+ * Directorio raíz del webservice
+ */
 app.get("/", (req, res)=>{
     res.render('start');
 });
@@ -42,6 +51,9 @@ app.get("/inicio", async (req, res)=>{
     res.render('chat', {consulta, usr, sesData});
 })
 
+/**
+ * Conexión del socket
+ */
 io.sockets.on("connection", (socket) => {
     const resp = '/inicio';
     socket.on("username", (username, id) => {
@@ -89,6 +101,10 @@ io.sockets.on("connection", (socket) => {
     });
 });
 
+/**
+ * Listen on port
+ * @type {http.Server | this}
+ */
 const server = http.listen(8000, () => {
     console.log("Server started on port 8000");
 });
